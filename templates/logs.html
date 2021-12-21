@@ -1,0 +1,39 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    History
+{% endblock %}
+
+{% block main %}
+    <h3>Logs:</h3>
+    <table>
+        <th>
+            Log ID
+        </th>
+        <th>
+            Date/Time
+        </th>
+        <th>
+            User
+        </th>
+        <th>
+            Entry ID
+        </th>
+        <th>
+            Table
+        </th>
+        <th>
+            Quantity Change
+        </th>
+        {% for log in logs %}
+        <tr class='table-body'>
+            <td>{{ log[0] }}</td>
+            <td>{{ log[1] }}</td>
+            <td>{{ log[2] }}</td>
+            <td>{{ log[3] }}</td>
+            <td>{{ log[4] }}</td>
+            <td>{{ log[5] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+{% endblock %}

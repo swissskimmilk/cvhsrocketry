@@ -1,0 +1,231 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Requests
+{% endblock %}
+
+{% block main %}
+
+    <script>
+        $(document).ready(function () {
+            toggleFields();
+
+            $("#category").change(function () {
+                toggleFields();
+            });
+
+        });
+
+        function toggleFields() {
+
+            if ($("#category").val() === "Tubes")
+                $("#tube_input").show();
+            else
+                $("#tube_input").hide();
+
+            if ($("#category").val() === "Motors")
+                $("#motor_input").show();
+            else
+                $("#motor_input").hide();
+
+            if ($("#category").val() === "Materials")
+                $("#material_input").show();
+            else
+                $("#material_input").hide();
+
+            if ($("#category").val() === "Recovery")
+                $("#recovery_input").show();
+            else
+                $("#recovery_input").hide();
+        }
+    </script>
+
+    <h3>
+        Add Part Request
+    </h3>
+    <form action="/requests" method="post">
+        <div class="form-group">
+            <select name="category" style='width: 150px' class='custom-input' id='category'>
+              <option value="Tubes">Tubes</option>
+              <option value="Motors">Motors</option>
+              <option value="Materials">Materials</option>
+              <option value="Recovery">Recovery</option>
+            </select>
+        </div>
+
+        <div class="form-group" id="tube_input">
+            <input name="tube_name" placeholder="Name" type="text" style='width: 150px' class='custom-input'>
+            <input name="tube_length" placeholder="Length (mm)" type="text" style='width: 150px' class='custom-input'>
+            <input name="tube_quantity" placeholder="Quantity" type="text" style='width: 150px' class='custom-input'>
+        </div>
+
+        <div class="form-group" id="motor_input">
+            <input name="motor_name" placeholder="Name (ex. D12-7)" type="text" style='width: 150px' class='custom-input'>
+            <input name="motor_quantity" placeholder="Quantity" type="text" style='width: 150px' class='custom-input'>
+        </div>
+
+        <div class="form-group" id="material_input">
+            <input name="material_type" placeholder="Type" type="text" style='width: 150px' class='custom-input'>
+            <input name="material_length" placeholder="Length (mm)" type="text" style='width: 150px' class='custom-input'>
+            <input name="material_width" placeholder="Width (mm)" type="text" style='width: 150px' class='custom-input'>
+            <input name="material_thickness" placeholder="Thickness (mm)" type="text" style='width: 150px' class='custom-input'>
+        </div>
+
+        <div class="form-group" id="recovery_input">
+            <input name="recovery_name" placeholder="Name" type="text" style='width: 150px' class='custom-input'>
+            <input name="recovery_quantity" placeholder="Quantity" type="text" style='width: 150px' class='custom-input'>
+        </div>
+        <button class="btn btn-primary" type="submit" name="part_submit" value="part_submit">Submit</button>
+    </form>
+
+    <h3 style='padding-top: 25px;'>
+        Part Requests
+    </h3>
+    <table>
+        <th>
+            User
+        </th>
+        <th>
+            Datetime
+        </th>
+        <th>
+            Category
+        </th>
+        <th>
+            Part
+        </th>
+        <th>
+            Quantity
+        </th>
+        <th>
+            Status
+        </th>
+        <th>
+            Update
+        </th>
+        <th>
+            Remove
+        </th>
+        {% for request in p_requests %}
+        <tr class='table-body'>
+            <td>{{ request[2] }}</td>
+            <td>{{ request[1] }}</td>
+            <td>{{ request[3] }}</td>
+            <td>{{ request[4] }}</td>
+            <td>{{ request[5] }}</td>
+            <form action="/requests" method="post">
+                <td>
+                    <select name="request_{{ request[0] }}_status" value="request_{{ request[0] }}_status" style='width: 100%; height: 100%' class='custom-input' id='status'>
+
+                        {% if request[6] == "Not Started" %}
+                        <option value="Not Started" selected>Not Started</option>
+                        {% else %}
+                        <option value="Not Started">Not Started</option>
+                        {% endif %}
+
+                        {% if request[6] == "Ordered" %}
+                        <option value="Ordered" selected>Ordered</option>
+                        {% else %}
+                        <option value="Ordered">Ordered</option>
+                        {% endif %}
+
+                        {% if request[6] == "Completed" %}
+                        <option value="Completed" selected>Completed</option>
+                        {% else %}
+                        <option value="Completed">Completed</option>
+                        {% endif %}
+
+                        {% if request[6] == "Unavailable" %}
+                        <option value="Unavailable" selected>Unavailable</option>
+                        {% else %}
+                        <option value="Unavailable">Unavailable</option>
+                        {% endif %}
+
+                    </select>
+                </td>
+                <td><button class="btn btn-info" type="update" name="request_{{ request[0] }}_update" value="request_{{ request[0] }}_update">Update</button></td>
+                <td><button class="btn btn-danger" type="remove" name="request_{{ request[0] }}_remove" value="request_{{ request[0] }}_remove">Remove</button></td>
+            </form>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <h3 style='padding-top: 25px;'>
+        Add Creation Request
+    </h3>
+    <form action="/upload" method="POST" enctype="multipart/form-data">
+        <div class="form-group">
+            <select name="upload_category" style='width: 150px' class='custom-input' id='upload_category'>
+              <option value="Laser">Laser Cut</option>
+              <option value="3D">3D Print</option>
+            </select>
+        </div>
+        <input type="file" name="file"/>
+        <input class="btn btn-primary" type="submit"/>
+    </form>
+    <h3 style='padding-top: 25px;'>
+        Creation Requests
+    </h3>
+    <table>
+        <th>
+            Category
+        </th>
+        <th>
+            Name
+        </th>
+        <th>
+            Status
+        </th>
+        <th>
+            Update
+        </th>
+        <th>
+            Remove
+        </th>
+        <th>
+            Download
+        </th>
+        {% for request in c_requests %}
+        <tr class='table-body'>
+            <td>{{ request[1] }}</td>
+            <td>{{ request[2] }}</td>
+            <form action="/requests" method="post">
+                <td>
+                    <select name="c_request_{{ request[0] }}_status" value="c_request_{{ request[0] }}_status" style='width: 100%; height: 100%' class='custom-input' id='status'>
+
+                        {% if request[3] == "Not Started" %}
+                        <option value="Not Started" selected>Not Started</option>
+                        {% else %}
+                        <option value="Not Started">Not Started</option>
+                        {% endif %}
+
+                        {% if request[3] == "In Progress" %}
+                        <option value="In Progress" selected>In Progress</option>
+                        {% else %}
+                        <option value="In Progress">In Progress</option>
+                        {% endif %}
+
+                        {% if request[3] == "Completed" %}
+                        <option value="Completed" selected>Completed</option>
+                        {% else %}
+                        <option value="Completed">Completed</option>
+                        {% endif %}
+
+                        {% if request[3] == "Unavailable" %}
+                        <option value="Unavailable" selected>Unavailable</option>
+                        {% else %}
+                        <option value="Unavailable">Unavailable</option>
+                        {% endif %}
+
+                    </select>
+                </td>
+                <td><button class="btn btn-info" type="update" name="c_request_{{ request[0] }}_update" value="c_request_{{ request[0] }}_update">Update</button></td>
+                <td><button class="btn btn-danger" type="remove" name="c_request_{{ request[0] }}_remove" value="c_request_{{ request[0] }}_remove">Remove</button></td>
+            </form>
+            <form action="/download" method="post">
+                <td><button class="btn btn-primary" type="download" name="c_request_{{ request[0] }}_download" value="c_request_{{ request[0] }}_download">Download</button></td>
+            </form>
+        </tr>
+        {% endfor %}
+    </table>
+{% endblock %}

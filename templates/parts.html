@@ -1,0 +1,266 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Parts
+{% endblock %}
+
+{% block main %}
+
+    <script>
+        $(document).ready(function () {
+            toggleFields();
+
+            $("#category").change(function () {
+                toggleFields();
+            });
+
+        });
+
+        function toggleFields() {
+
+            if ($("#category").val() === "Tubes")
+                $("#tube_input").show();
+            else
+                $("#tube_input").hide();
+
+            if ($("#category").val() === "Motors")
+                $("#motor_input").show();
+            else
+                $("#motor_input").hide();
+
+            if ($("#category").val() === "Materials")
+                $("#material_input").show();
+            else
+                $("#material_input").hide();
+
+            if ($("#category").val() === "Recovery")
+                $("#recovery_input").show();
+            else
+                $("#recovery_input").hide();
+        }
+    </script>
+
+    <h3>Add Part</h3>
+    <form action="/parts" method="post">
+        <div class="form-group">
+            <select name="category" style='width: 150px' class='custom-input' id='category'>
+              <option value="Tubes">Tubes</option>
+              <option value="Motors">Motors</option>
+              <option value="Materials">Materials</option>
+              <option value="Recovery">Recovery</option>
+            </select>
+        </div>
+
+        <div class="form-group" id="tube_input">
+            <input name="tube_name" placeholder="Name" type="text" style='width: 150px' class='custom-input'>
+            <input name="tube_length" placeholder="Length (mm)" type="text" style='width: 150px' class='custom-input'>
+            <input name="tube_inner_diameter" placeholder="ID (mm)" type="text" style='width: 150px' class='custom-input'>
+            <input name="tube_outer_diameter" placeholder="OD (mm)" type="text" style='width: 150px' class='custom-input'>
+            <input name="tube_weight" placeholder="Weight (g)" type="text" style='width: 150px' class='custom-input'>
+            <input name="tube_quantity" placeholder="Quantity" type="text" style='width: 150px' class='custom-input'>
+        </div>
+
+        <div class="form-group" id="motor_input">
+            <input name="motor_class" placeholder="Class" type="text" style='width: 150px' class='custom-input'>
+            <input name="motor_average_thrust" placeholder="Number" type="number" min='1' step='1' style='width: 150px' class='custom-input'>
+            <input name="motor_delay" placeholder="Delay" type="number" min='1' step='1' style='width: 150px' class='custom-input'>
+            <input name="motor_weight" placeholder="Weight (g)" type="text" style='width: 150px' class='custom-input'>
+            <input name="motor_quantity" placeholder="Quantity" type="text" style='width: 150px' class='custom-input'>
+        </div>
+
+        <div class="form-group" id="material_input">
+            <input name="material_type" placeholder="Type" type="text" style='width: 150px' class='custom-input'>
+            <input name="material_length" placeholder="Length (mm)" type="text" style='width: 150px' class='custom-input'>
+            <input name="material_width" placeholder="Width (mm)" type="text" style='width: 150px' class='custom-input'>
+            <input name="material_thickness" placeholder="Thickness (mm)" type="text" style='width: 150px' class='custom-input'>
+            <input name="material_weight" placeholder="Weight (g)" type="text" style='width: 150px' class='custom-input'>
+            <input name="material_quantity" placeholder="Quantity" type="text" style='width: 150px' class='custom-input'>
+        </div>
+
+        <div class="form-group" id="recovery_input">
+            <input name="recovery_name" placeholder="Name" type="text" style='width: 150px' class='custom-input'>
+            <input name="recovery_type" placeholder="Type" type="text" style='width: 150px' class='custom-input'>
+            <input name="recovery_size" placeholder="Size" type="text" style='width: 150px' class='custom-input'>
+            <input name="recovery_weight" placeholder="Weight (g)" type="text" style='width: 150px' class='custom-input'>
+            <input name="recovery_quantity" placeholder="Quantity" type="text" style='width: 150px' class='custom-input'>
+        </div>
+        <button class="btn btn-primary" type="submit" name="submit" value="submit">Submit</button>
+    </form>
+
+    <h3 style='padding-top: 25px;'>Tubes</h3>
+    <table>
+        <th>
+            Name
+        </th>
+        <th>
+            Length
+        </th>
+        <th>
+            Inner Dia.
+        </th>
+        <th>
+            Outer Dia.
+        </th>
+        <th>
+            Weight
+        </th>
+        <th>
+            Quantity
+        </th>
+        <th>
+            Change Inventory
+        </th>
+        <th>
+            Update
+        </th>
+        <th>
+            Remove
+        </th>
+        {% for tube in tubes %}
+        <tr class='table-body'>
+            <td>{{ tube[1] }}</td>
+            <td>{{ tube[2] }}</td>
+            <td>{{ tube[3] }}</td>
+            <td>{{ tube[4] }}</td>
+            <td>{{ tube[5] }}</td>
+            <td>{{ tube[6] }}</td>
+            <form action="/parts" method="post">
+                <td><input name="tube_{{ tube[0] }}_change" value="tube_{{ tube[0] }}_change" placeholder="Change Inventory" type="number" step='1' style='width: 150px' class='custom-input'></td>
+                <td><button class="btn btn-info" type="update" name="tube_{{ tube[0] }}_update" value="tube_{{ tube[0] }}_update">Update</button></td>
+                <td><button class="btn btn-danger" type="remove" name="tube_{{ tube[0] }}_remove" value="tube_{{ tube[0] }}_remove">Remove</button></td>
+            </form>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <h3 style='padding-top: 25px;'>Motors</h3>
+    <table>
+        <th>
+            Class
+        </th>
+        <th>
+            Average Thrust
+        </th>
+        <th>
+            Delay
+        </th>
+        <th>
+            Weight
+        </th>
+        <th>
+            Quantity
+        </th>
+        <th>
+            Change Inventory
+        </th>
+        <th>
+            Update
+        </th>
+        <th>
+            Remove
+        </th>
+        {% for motor in motors %}
+        <tr class='table-body'>
+            <td>{{ motor[1] }}</td>
+            <td>{{ motor[2] }}</td>
+            <td>{{ motor[3] }}</td>
+            <td>{{ motor[4] }}</td>
+            <td>{{ motor[5] }}</td>
+            <form action="/parts" method="post">
+                <td><input name="motor_{{ motor[0] }}_change" value="motor_{{ motor[0] }}_change" placeholder="Change Inventory" type="number" step='1' style='width: 150px' class='custom-input'></td>
+                <td><button class="btn btn-info" type="update" name="motor_{{ motor[0] }}_update" value="motor_{{ motor[0] }}_update">Update</button></td>
+                <td><button class="btn btn-danger" type="remove" name="motor_{{ motor[0] }}_remove" value="motor_{{ motor[0] }}_remove">Remove</button></td>
+            </form>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <h3 style='padding-top: 25px;'>Materials</h3>
+    <table>
+        <th>
+            Type
+        </th>
+        <th>
+            Length
+        </th>
+        <th>
+            Width
+        </th>
+        <th>
+            Thickness
+        </th>
+        <th>
+            Weight
+        </th>
+        <th>
+            Quantity
+        </th>
+        <th>
+            Change Inventory
+        </th>
+        <th>
+            Update
+        </th>
+        <th>
+            Remove
+        </th>
+        {% for material in materials %}
+        <tr class='table-body'>
+            <td>{{ material[1] }}</td>
+            <td>{{ material[2] }}</td>
+            <td>{{ material[3] }}</td>
+            <td>{{ material[4] }}</td>
+            <td>{{ material[5] }}</td>
+            <td>{{ material[6] }}</td>
+            <form action="/parts" method="post">
+                <td><input name="material_{{ material[0] }}_change" value="material_{{ material[0] }}_change" placeholder="Change Inventory" type="number" step='1' style='width: 150px' class='custom-input'></td>
+                <td><button class="btn btn-info" type="update" name="material_{{ material[0] }}_update" value="material_{{ material[0] }}_update">Update</button></td>
+                <td><button class="btn btn-danger" type="remove" name="material_{{ material[0] }}_remove" value="material_{{ material[0] }}_remove">Remove</button></td>
+            </form>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <h3 style='padding-top: 25px;'>Recovery Systems</h3>
+    <table>
+        <th>
+            Name
+        </th>
+        <th>
+            Type
+        </th>
+        <th>
+            Size
+        </th>
+        <th>
+            Weight
+        </th>
+        <th>
+            Quantity
+        </th>
+        <th>
+            Change Inventory
+        </th>
+        <th>
+            Update
+        </th>
+        <th>
+            Remove
+        </th>
+        {% for recoveryS in recovery %}
+        <tr class='table-body'>
+            <td>{{ recoveryS[1] }}</td>
+            <td>{{ recoveryS[2] }}</td>
+            <td>{{ recoveryS[3] }}</td>
+            <td>{{ recoveryS[4] }}</td>
+            <td>{{ recoveryS[5] }}</td>
+            <form action="/parts" method="post">
+                <td><input name="recoveryS_{{ recoveryS[0] }}_change" value="recoveryS_{{ recoveryS[0] }}_change" placeholder="Change Inventory" type="number" step='1' style='width: 150px' class='custom-input'></td>
+                <td><button class="btn btn-info" type="update" name="recoveryS_{{ recoveryS[0] }}_update" value="recoveryS_{{ recoveryS[0] }}_update">Update</button></td>
+                <td><button class="btn btn-danger" type="remove" name="recoveryS_{{ recoveryS[0] }}_remove" value="recoveryS_{{ recoveryS[0] }}_remove">Remove</button></td>
+            </form>
+        </tr>
+        {% endfor %}
+    </table>
+
+{% endblock %}
