@@ -1,6 +1,9 @@
 # Todo:
-# Add DATETIME and USER for creation_requests
 # Complete homepage
+# Install Choclatey on VM 
+# Install Git on VM 
+# Configure Git repo 
+# Deploy application 
 
 import os
 import sys
@@ -407,3 +410,6 @@ def errorhandler(e):
 # Listen for errors
 for code in default_exceptions:
     app.errorhandler(code)(errorhandler)
+
+if __name__ == "__main__":
+    app.run()
