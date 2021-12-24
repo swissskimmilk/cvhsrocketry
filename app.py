@@ -50,6 +50,7 @@ app = Flask(__name__)
 # Ensure templates are auto-reloaded
 app.config["TEMPLATES_AUTO_RELOAD"] = True
 app.config["UPLOAD_FOLDER"] = "uploads/"
+app.config["SERVER_NAME"] = "cvhsrocketry.org"
 
 # Ensure responses aren't cached
 @app.after_request
@@ -412,4 +413,5 @@ for code in default_exceptions:
     app.errorhandler(code)(errorhandler)
 
 if __name__ == "__main__":
+    #app.run(host= '0.0.0.0', port="4823")
     app.run()
