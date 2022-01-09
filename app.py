@@ -5,6 +5,8 @@
 # Configure Git repo 
 # Deploy application 
 
+import constants
+
 import os
 import sys
 from datetime import datetime
@@ -29,20 +31,6 @@ DATABASE_NAME = os.environ.get("databaseName")
 HOST = os.environ.get("host")
 USER = os.environ.get("user")
 PASSWORD = os.environ.get("password")
-
-TUBE_ELEMENTS = ['tube_name', 'tube_length', 'tube_inner_diameter', 'tube_outer_diameter', 'tube_weight', 'tube_quantity'] 
-TUBE_COLUMNS = ['name', 'length', 'inner_diameter', 'outer_diameter', 'weight', 'quantity']
-MOTOR_ELEMENTS = ['motor_class', 'motor_average_thrust', 'motor_delay', 'motor_weight', 'motor_quantity']
-MOTOR_COLUMNS = ['class', 'average_thrust', 'delay', 'weight', 'quantity']
-MATERIAL_ELEMENTS = ['material_type', 'material_length', 'material_width', 'material_thickness', 'material_weight', 'material_quantity']
-MATERIAL_COLUMNS = ['type', 'length', 'width', 'thickness', 'weight', 'quantity']
-RECOVERY_ELEMENTS = ['recovery_name', 'recovery_type', 'recovery_size', 'recovery_weight', 'recovery_quantity']
-RECOVERY_COLUMNS = ['name', 'type', 'size', 'weight', 'quantity']
-
-TUBE_REQUEST_ELEMENTS = ['tube_name', 'tube_length', 'tube_quantity']
-MOTOR_REQUEST_ELEMENTS = ['motor_name', 'motor_quantity']
-MATERIAL_REQUEST_ELEMENTS = ['material_type', 'material_length', 'material_width', 'material_thickness']
-RECOVERY_REQUEST_ELEMENTS = ['recovery_name', 'recovery_quantity']
 
 # Configure application
 app = Flask(__name__)
@@ -131,8 +119,8 @@ def addPart(tableName, elementNames, columnNames):
         updateLogs(entryID, tableName, elementValues[-1])
     return redirect(url_for('parts'))
 
-def updatePart(part, elementIdentifier, tableName, columnNames):
-    change = request.form.get(f"{elementIdentifier}_{str(part[0])}_change")
+def updatePart(part, name, columnNames):
+    change = request.form.get(f"{name}_{str(part[0])}_change")
     if change == "":
         change = "0"
     # use len(columnNames) instead of len(columnNames) - 1 because columnNames does not include the id column 
@@ -140,7 +128,7 @@ def updatePart(part, elementIdentifier, tableName, columnNames):
     print(f"Current quant: {part[len(columnNames)]} | Change: {change} | New quant: {new_quantity}", flush=True)
     if new_quantity < 0:
         new_quantity = 0
-    cursor.execute(f"UPDATE {tableName} SET quantity = %s WHERE id = %s", (new_quantity, part[0]))
+    cursor.execute(f"UPDATE {name} SET quantity = %s WHERE id = %s", (new_quantity, part[0]))
     db.commit()
     return redirect(url_for('parts'))
 
@@ -197,89 +185,54 @@ def index():
 @app.route("/parts", methods=["GET", "POST"])
 @login_required
 def parts():
-    cursor.execute("SELECT * FROM tubes")
-    tubes = cursor.fetchall()
-    cursor.execute("SELECT * FROM motors")
-    motors = cursor.fetchall()
-    cursor.execute("SELECT * FROM materials")
-    materials = cursor.fetchall()
-    cursor.execute("SELECT * FROM recovery")
-    recovery = cursor.fetchall()
+
+    tables = []
+    for i in range(len(constants.CATEGORIES)):
+        cursor.execute(f"SELECT * FROM {constants.CATEGORIES[i][constants.NAME_INDEX]}")
+        tables.append(cursor.fetchall())
+
     if request.method == "POST":
-        print(request.form.get, flush=True)
-        
         # Add parts 
         if request.form.get("submit"):
-            if request.form.get("category") == "Tubes":
-                return addPart("tubes", TUBE_ELEMENTS, TUBE_COLUMNS)
-            elif request.form.get("category") == "Motors":
-                if len(request.form.get("motor_class")) != 1:
-                    return apology("motor class must be a single character", 400)
-                return addPart("motors", MOTOR_ELEMENTS, MOTOR_COLUMNS)
-            elif request.form.get("category") == "Materials":
-                return addPart("materials", MATERIAL_ELEMENTS, MATERIAL_COLUMNS)
-            elif request.form.get("category") == "Recovery":
-                return addPart("recovery", RECOVERY_ELEMENTS, RECOVERY_COLUMNS)
+            for category in constants.CATEGORIES:
+                if request.form.get("category") == category[constants.NAME_INDEX]:
+
+                    # REMOVE FOR GITHUB
+                    if request.form.get("category") == "Motors":
+                        if len(request.form.get("motor_class")) != 1:
+                            return apology("motor class must be a single character", 400)
+
+                    return addPart(constants.NAME_INDEX, category[constants.ELEMENT_INDEX], category[constants.COLUMN_INDEX])
             return apology("an error occurred while adding a part", 500)
 
         # TODO: ADD lOGS FOR UPDATING PARTS
         # Update parts 
-        for tube in tubes:
-            print("ID: " + str(tube[0]), flush=True)
-            if request.form.get("tube_" + str(tube[0]) + "_update"):
-                return updatePart(tube, "tube", "tubes", TUBE_COLUMNS)
-            elif request.form.get("tube_" + str(tube[0]) + "_remove"):
-                return deletePart(tube, "tubes", "parts")
-        for motor in motors:
-            print("ID: " + str(motor[0]), flush=True)
-            if request.form.get("motor_" + str(motor[0]) + "_update"):
-                return updatePart(motor, "motor", "motors", MOTOR_COLUMNS)
-            elif request.form.get("motor_" + str(motor[0]) + "_remove"):
-                return deletePart(motor, "motors", "parts")
-        for material in materials:
-            print("ID: " + str(material[0]), flush=True)
-            if request.form.get("material_" + str(material[0]) + "_update"):
-                return updatePart(material, "material", "materials", MATERIAL_COLUMNS)
-            elif request.form.get("material_" + str(material[0]) + "_remove"):
-                return deletePart(material, "materials", "parts")
-        for recoveryS in recovery:
-            print("ID: " + str(recoveryS[0]), flush=True)
-            if request.form.get("recoveryS_" + str(recoveryS[0]) + "_update"):
-                return updatePart(recoveryS, "recoveryS", "recovery", RECOVERY_COLUMNS)
-            elif request.form.get("recoveryS_" + str(recoveryS[0]) + "_remove"):
-                return deletePart(recoveryS, "recovery", "parts")
+        for table in tables:
+            for entry in table:
+                if request.form.get(f"{constants.CATEGORIES[i][constants.NAME_INDEX]}_{str(entry[0])}_update"):
+                    return updatePart(entry, constants.CATEGORIES[i][constants.NAME_INDEX], constants.CATEGORIES[i][constants.COLUMN_INDEX])
+                elif request.form.get(f"{constants.CATEGORIES[i][constants.NAME_INDEX]}_{str(entry[0])}_remove"):
+                    return deletePart(entry, constants.CATEGORIES[i][constants.NAME_INDEX], "parts")
         return apology("an error occured while updating an entry", 500)
     # If method is get 
     else:
-        return render_template("parts.html", tubes=tubes, motors=motors, materials=materials, recovery=recovery)
+        return render_template("parts.html", tables=tables)
 
 @app.route("/requests", methods=["GET", "POST"])
 @login_required
 def requests():
     if request.method == "POST":
         if request.form.get("part_submit"):
-            if request.form.get("category") == "Tubes":
-                partName = str(request.form.get("tube_length")) + " mm " + str(request.form.get("tube_name"))
-                return addRequest(partName, TUBE_REQUEST_ELEMENTS)
-            elif request.form.get("category") == "Motors":
-                partName = request.form.get("motor_name")
-                return addRequest(partName, MOTOR_REQUEST_ELEMENTS)
-            elif request.form.get("category") == "Materials":
-                partName = (str(request.form.get("material_length")) + " x " +
-                            str(request.form.get("material_width")) + " x " +
-                            str(request.form.get("material_thickness")) + " " +
-                            str(request.form.get("material_type")))
-                return addRequest(partName, MATERIAL_REQUEST_ELEMENTS)
-            elif request.form.get("category") == "Recovery":
-                partName = request.form.get("recovery_name")
-                return addRequest(partName, RECOVERY_REQUEST_ELEMENTS)
+            for category in constants.CATEGORIES:
+                if request.form.get("cateogry") == category[constants.NAME_INDEX]:
+                    partName = constants.processRequest(category[constants.NAME_INDEX])
+                    return addRequest(partName, constants.CATEGORIES[constants.REQUEST_ELEMENTS_INDEX])
             return apology("an error occured while adding a part request", 500)
 
         cursor.execute("SELECT * FROM part_requests")
         part_requests = cursor.fetchall()
         for part_request in part_requests:
             request_id = str(part_request[0])
-            print("ID: " + str(request_id), flush=True)
             if request.form.get("request_" + request_id + "_update"):
                 newStatus = request.form.get("request_" + request_id + "_status")
                 cursor.execute("UPDATE part_requests SET status = %s WHERE id = %s", (newStatus, request_id))
