@@ -1,9 +1,7 @@
 # Todo:
-# Complete homepage
-# Install Choclatey on VM 
-# Install Git on VM 
-# Configure Git repo 
-# Deploy application 
+# RECREATE DATABASE WITH SIGNULAR NAME FOR EACH TABLE, GET TABLE CREATION SCRIPT FROM MYSQL 
+# UH OH I CAN NOT DO THAT
+# ADD ANOTHER ROW TO THE CATEGORIES CONSTANT (SUCKS I KNOW) WITH TABLE NAMES
 
 import constants
 
@@ -38,7 +36,7 @@ app = Flask(__name__)
 # Ensure templates are auto-reloaded
 app.config["TEMPLATES_AUTO_RELOAD"] = True
 app.config["UPLOAD_FOLDER"] = "uploads/"
-app.config["SERVER_NAME"] = "cvhsrocketry.org"
+#app.config["SERVER_NAME"] = "cvhsrocketry.org"
 
 # Ensure responses aren't cached
 @app.after_request
@@ -62,6 +60,10 @@ db = mysql.connector.connect(
     database=DATABASE_NAME
 )
 cursor = db.cursor()
+
+def extractColumn(matrix, i):
+    return [row[i] for row in matrix]
+
 
 def checkFields(elementNames):
     for elementName in elementNames:
@@ -188,8 +190,10 @@ def parts():
 
     tables = []
     for i in range(len(constants.CATEGORIES)):
-        cursor.execute(f"SELECT * FROM {constants.CATEGORIES[i][constants.NAME_INDEX]}")
-        tables.append(cursor.fetchall())
+        cursor.execute(f"SELECT * FROM {constants.CATEGORIES[i][constants.TABLE_NAME_INDEX]}")
+        rows = cursor.fetchall()
+        if len(rows) != 0:
+            tables.append(rows)
 
     if request.method == "POST":
         # Add parts 
@@ -202,7 +206,7 @@ def parts():
                         if len(request.form.get("motor_class")) != 1:
                             return apology("motor class must be a single character", 400)
 
-                    return addPart(constants.NAME_INDEX, category[constants.ELEMENT_INDEX], category[constants.COLUMN_INDEX])
+                    return addPart(constants.TABLE_NAME_INDEX, category[constants.ELEMENT_INDEX], category[constants.COLUMN_INDEX])
             return apology("an error occurred while adding a part", 500)
 
         # TODO: ADD lOGS FOR UPDATING PARTS
@@ -216,7 +220,15 @@ def parts():
         return apology("an error occured while updating an entry", 500)
     # If method is get 
     else:
-        return render_template("parts.html", tables=tables)
+        # Give only the arrays with column names
+        names = extractColumn(constants.CATEGORIES, constants.NAME_INDEX)
+        tableNames = extractColumn(constants.CATEGORIES, constants.TABLE_NAME_INDEX)
+        columns = extractColumn(constants.CATEGORIES, constants.COLUMN_INDEX) 
+        unifData = []
+        for i in range(len(tables)):
+            unifData.append([tables[i], names[i], tableNames[i], columns[i]])
+        print(unifData, flush=True)
+        return render_template("parts.html", data=unifData)
 
 @app.route("/requests", methods=["GET", "POST"])
 @login_required
@@ -367,4 +379,5 @@ for code in default_exceptions:
 
 if __name__ == "__main__":
     #app.run(host= '0.0.0.0', port="4823")
-    app.run()
+    app.run(debug=True)
+

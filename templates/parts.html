@@ -17,7 +17,6 @@
         });
 
         function toggleFields() {
-
             if ($("#category").val() === "Tubes")
                 $("#tube_input").show();
             else
@@ -44,10 +43,9 @@
     <form action="/parts" method="post">
         <div class="form-group">
             <select name="category" style='width: 150px' class='custom-input' id='category'>
-              <option value="Tubes">Tubes</option>
-              <option value="Motors">Motors</option>
-              <option value="Materials">Materials</option>
-              <option value="Recovery">Recovery</option>
+                {% for section in data %}
+                    <option value="{{ section[2] }}">{{ section[2] }}</option>
+                {% endfor %}
             </select>
         </div>
 
@@ -87,21 +85,24 @@
         <button class="btn btn-primary" type="submit" name="submit" value="submit">Submit</button>
     </form>
 
-    {% for i in range(len(tables)) %}
-        <h3 style='padding-top: 25px;'>{{ names[i] }}</h3>
+    {% for section in data %}
+        <h3 style='padding-top: 25px;'>{{ section[2] }}</h3>
         <table>
-            {% for column in columns[i] %}
+            {% for column in section[3] %}
                 <th>{{ column }}</th>
             {% endfor %}
-            {% for j in range(len(tables[i])) %}
+                <th>Change</th>
+                <th>Update</th>
+                <th>Remove</th>
+            {% for entry in section[0] %}
                 <tr class='table-body'>
-                    {% for v in range(1, len(columns)) %}
-                        <td>{{ tables[i][j][v] }}</td>
+                    {% for field in entry[1:] %}
+                        <td>{{ field }}</td>
                     {% endfor %}
                     <form action="/parts" method="post">
-                        <td><input name="{{ names[i] }}_{{ tables[i][j][0] }}_change" value="{{ names[i] }}_{{ tables[i][j][0] }}_change" placeholder="Change Inventory" type="number" step='1' style='width: 150px' class='custom-input'></td>
-                        <td><button class="btn btn-info" type="update" name="{{ names[i] }}_{{ tables[i][j][0] }}_update" value="{{ names[i] }}_{{ tables[i][j][0] }}_update">Update</button></td>
-                        <td><button class="btn btn-danger" type="remove" name="{{ names[i] }}_{{ tables[i][j][0] }}_remove" value="{{ names[i] }}_{{ tables[i][j][0] }}_remove">Remove</button></td>
+                        <td><input name="{{ section[1] }}_{{ entry[0] }}_change" value="{{ section[1] }}_{{ entry[0] }}_change" placeholder="Change Inventory" type="number" step='1' style='width: 150px' class='custom-input'></td>
+                        <td><button class="btn btn-info" type="update" name="{{ section[1] }}_{{ entry[0] }}_update" value="{{ section[1] }}_{{ entry[0] }}_update">Update</button></td>
+                        <td><button class="btn btn-danger" type="remove" name="{{ section[1] }}_{{ entry[0] }}_remove" value="{{ section[1] }}_{{ entry[0] }}_remove">Remove</button></td>
                     </form>
                 </tr>
             {% endfor %}
