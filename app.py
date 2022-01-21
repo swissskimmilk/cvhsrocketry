@@ -90,6 +90,8 @@ def addPart(tableName, elementNames, columnNames):
     query = f"SELECT * FROM {tableName} WHERE {columnNames[0]} = %s"
     for i in range(1, len(columnNames[:-1])):
         query += f" AND {columnNames[i]} = %s"
+    print(query, flush=True)
+    print(elementValues, flush=True)
     cursor.execute(query, tuple(elementValues[:-1]))
     entries = cursor.fetchall()
  
@@ -121,7 +123,7 @@ def addPart(tableName, elementNames, columnNames):
         updateLogs(entryID, tableName, elementValues[-1])
     return redirect(url_for('parts'))
 
-def updatePart(part, name, columnNames):
+def updatePart(part, name, columnNames, tableName):
     change = request.form.get(f"{name}_{str(part[0])}_change")
     if change == "":
         change = "0"
@@ -130,7 +132,7 @@ def updatePart(part, name, columnNames):
     print(f"Current quant: {part[len(columnNames)]} | Change: {change} | New quant: {new_quantity}", flush=True)
     if new_quantity < 0:
         new_quantity = 0
-    cursor.execute(f"UPDATE {name} SET quantity = %s WHERE id = %s", (new_quantity, part[0]))
+    cursor.execute(f"UPDATE {tableName} SET quantity = %s WHERE id = %s", (new_quantity, part[0]))
     db.commit()
     return redirect(url_for('parts'))
 
@@ -199,24 +201,24 @@ def parts():
         # Add parts 
         if request.form.get("submit"):
             for category in constants.CATEGORIES:
-                if request.form.get("category") == category[constants.NAME_INDEX]:
+                if request.form.get("category") == category[constants.TABLE_NAME_INDEX]:
 
                     # REMOVE FOR GITHUB
                     if request.form.get("category") == "Motors":
                         if len(request.form.get("motor_class")) != 1:
                             return apology("motor class must be a single character", 400)
 
-                    return addPart(constants.TABLE_NAME_INDEX, category[constants.ELEMENT_INDEX], category[constants.COLUMN_INDEX])
+                    return addPart(category[constants.TABLE_NAME_INDEX], category[constants.ELEMENT_INDEX], category[constants.COLUMN_INDEX])
             return apology("an error occurred while adding a part", 500)
 
         # TODO: ADD lOGS FOR UPDATING PARTS
         # Update parts 
-        for table in tables:
-            for entry in table:
+        for i in range(len(tables)):
+            for entry in tables[i]:
                 if request.form.get(f"{constants.CATEGORIES[i][constants.NAME_INDEX]}_{str(entry[0])}_update"):
-                    return updatePart(entry, constants.CATEGORIES[i][constants.NAME_INDEX], constants.CATEGORIES[i][constants.COLUMN_INDEX])
+                    return updatePart(entry, constants.CATEGORIES[i][constants.NAME_INDEX], constants.CATEGORIES[i][constants.COLUMN_INDEX], constants.CATEGORIES[i][constants.TABLE_NAME_INDEX])
                 elif request.form.get(f"{constants.CATEGORIES[i][constants.NAME_INDEX]}_{str(entry[0])}_remove"):
-                    return deletePart(entry, constants.CATEGORIES[i][constants.NAME_INDEX], "parts")
+                    return deletePart(entry, constants.CATEGORIES[i][constants.TABLE_NAME_INDEX], "parts")
         return apology("an error occured while updating an entry", 500)
     # If method is get 
     else:
@@ -227,7 +229,6 @@ def parts():
         unifData = []
         for i in range(len(tables)):
             unifData.append([tables[i], names[i], tableNames[i], columns[i]])
-        print(unifData, flush=True)
         return render_template("parts.html", data=unifData)
 
 @app.route("/requests", methods=["GET", "POST"])
@@ -257,7 +258,6 @@ def requests():
         creation_requests = cursor.fetchall()
         for creation_request in creation_requests:
             request_id = str(creation_request[0])
-            print("ID: " + str(request_id), flush=True)
             if request.form.get("c_request_" + request_id + "_update"):
                 newStatus = request.form.get("c_request_" + request_id + "_status")
                 cursor.execute("UPDATE creation_requests SET status = %s WHERE id = %s", (newStatus, request_id))
@@ -293,7 +293,6 @@ def upload():
 @app.route("/download", methods=["GET", "POST"])
 @login_required
 def download():
-    print(request.method, flush=True)
     cursor.execute("SELECT * FROM creation_requests")
     creation_requests = cursor.fetchall()
     for c_request in creation_requests:
