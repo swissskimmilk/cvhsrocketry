@@ -7,6 +7,7 @@
 {% block main %}
 
     <script>
+        const inputGroups = document.getElementsByClassName("input_group");
         $(document).ready(function () {
             toggleFields();
 
@@ -17,34 +18,36 @@
         });
 
         function toggleFields() {
-
-            if ($("#category").val() === "Tubes")
-                $("#tube_input").show();
-            else
-                $("#tube_input").hide();
-
-            if ($("#category").val() === "Motors")
-                $("#motor_input").show();
-            else
-                $("#motor_input").hide();
-
-            if ($("#category").val() === "Materials")
-                $("#material_input").show();
-            else
-                $("#material_input").hide();
-
-            if ($("#category").val() === "Recovery")
-                $("#recovery_input").show();
-            else
-                $("#recovery_input").hide();
+            for (let i = 0; i < inputGroups.length; i++) {
+                $(inputGroups[i]).hide();
+            }
+            let dropdown = $("#category").val()
+            $("#" + dropdown + "_input").show();
         }
     </script>
 
     <h3>
         Add Part Request
     </h3>
+    
     <form action="/requests" method="post">
         <div class="form-group">
+            <select name="category" style='width: 150px' class='custom-input' id='category'>
+                {% for section in data %}
+                    <option value="{{ section[0] }}">{{ section[0] }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        {% for section in data %}
+            <div class="form-group input_group" id="{{ section[0] }}_input">
+                {% for column in section[2] %}
+                    <input name="{{ column }}" placeholder="{{ column }}" type="text" style='width: 150px' class='custom-input'>
+                {% endfor %}
+            </div>
+        {% endfor %}
+
+        <!-- <div class="form-group">
             <select name="category" style='width: 150px' class='custom-input' id='category'>
               <option value="Tubes">Tubes</option>
               <option value="Motors">Motors</option>
@@ -74,7 +77,7 @@
         <div class="form-group" id="recovery_input">
             <input name="recovery_name" placeholder="Name" type="text" style='width: 150px' class='custom-input'>
             <input name="recovery_quantity" placeholder="Quantity" type="text" style='width: 150px' class='custom-input'>
-        </div>
+        </div> -->
         <button class="btn btn-primary" type="submit" name="part_submit" value="part_submit">Submit</button>
     </form>
 
@@ -156,8 +159,9 @@
     <form action="/upload" method="POST" enctype="multipart/form-data">
         <div class="form-group">
             <select name="upload_category" style='width: 150px' class='custom-input' id='upload_category'>
-              <option value="Laser">Laser Cut</option>
-              <option value="3D">3D Print</option>
+                {% for uploadCat in uploadCats %}
+                    <option value="{{ uploadCat }}">{{ uploadCat }}</option>
+                {% endfor %}
             </select>
         </div>
         <input type="file" name="file"/>

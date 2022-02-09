@@ -37,37 +37,13 @@
         </div>
         
         {% for section in data %}
-            <div class="form-group input_group" id="tubes_input">
+            <div class="form-group input_group" id="{{ section[2] }}_input">
                 {% for column in section[3] %}
                     <input name="{{ section[1] }}_{{ column }}" placeholder="{{ column }}" type="text" style='width: 150px' class='custom-input'>
                 {% endfor %}
             </div>
         {% endfor %}
-
-        <div class="form-group input_group" id="motors_input">
-            <input name="motor_class" placeholder="Class" type="text" style='width: 150px' class='custom-input'>
-            <input name="motor_average_thrust" placeholder="Number" type="number" min='1' step='1' style='width: 150px' class='custom-input'>
-            <input name="motor_delay" placeholder="Delay" type="number" min='1' step='1' style='width: 150px' class='custom-input'>
-            <input name="motor_weight" placeholder="Weight (g)" type="text" style='width: 150px' class='custom-input'>
-            <input name="motor_quantity" placeholder="Quantity" type="text" style='width: 150px' class='custom-input'>
-        </div>
-
-        <div class="form-group input_group" id="materials_input">
-            <input name="material_type" placeholder="Type" type="text" style='width: 150px' class='custom-input'>
-            <input name="material_length" placeholder="Length (mm)" type="text" style='width: 150px' class='custom-input'>
-            <input name="material_width" placeholder="Width (mm)" type="text" style='width: 150px' class='custom-input'>
-            <input name="material_thickness" placeholder="Thickness (mm)" type="text" style='width: 150px' class='custom-input'>
-            <input name="material_weight" placeholder="Weight (g)" type="text" style='width: 150px' class='custom-input'>
-            <input name="material_quantity" placeholder="Quantity" type="text" style='width: 150px' class='custom-input'>
-        </div>
-
-        <div class="form-group input_group" id="recovery_input">
-            <input name="recovery_name" placeholder="Name" type="text" style='width: 150px' class='custom-input'>
-            <input name="recovery_type" placeholder="Type" type="text" style='width: 150px' class='custom-input'>
-            <input name="recovery_size" placeholder="Size" type="text" style='width: 150px' class='custom-input'>
-            <input name="recovery_weight" placeholder="Weight (g)" type="text" style='width: 150px' class='custom-input'>
-            <input name="recovery_quantity" placeholder="Quantity" type="text" style='width: 150px' class='custom-input'>
-        </div>
+        
         <button class="btn btn-primary" type="submit" name="submit" value="submit">Submit</button>
     </form>
 

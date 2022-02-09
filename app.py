@@ -64,7 +64,6 @@ cursor = db.cursor()
 def extractColumn(matrix, i):
     return [row[i] for row in matrix]
 
-
 def checkFields(elementNames):
     for elementName in elementNames:
         if not request.form.get(elementName):
@@ -194,8 +193,7 @@ def parts():
     for i in range(len(constants.CATEGORIES)):
         cursor.execute(f"SELECT * FROM {constants.CATEGORIES[i][constants.TABLE_NAME_INDEX]}")
         rows = cursor.fetchall()
-        if len(rows) != 0:
-            tables.append(rows)
+        tables.append(rows)
 
     if request.method == "POST":
         # Add parts 
@@ -237,9 +235,9 @@ def requests():
     if request.method == "POST":
         if request.form.get("part_submit"):
             for category in constants.CATEGORIES:
-                if request.form.get("cateogry") == category[constants.NAME_INDEX]:
+                if request.form.get("category") == category[constants.NAME_INDEX]:
                     partName = constants.processRequest(category[constants.NAME_INDEX])
-                    return addRequest(partName, constants.CATEGORIES[constants.REQUEST_ELEMENTS_INDEX])
+                    return addRequest(partName, category[constants.REQUEST_ELEMENTS_INDEX])
             return apology("an error occured while adding a part request", 500)
 
         cursor.execute("SELECT * FROM part_requests")
@@ -267,11 +265,19 @@ def requests():
                 return deletePart(creation_request, "creation_requests", "requests")
         return apology("an error occurred while updating a request entry", 500)
     else:
+        # Give only the arrays with column names
+        names = extractColumn(constants.CATEGORIES, constants.NAME_INDEX)
+        tableNames = extractColumn(constants.CATEGORIES, constants.TABLE_NAME_INDEX)
+        elements = extractColumn(constants.CATEGORIES, constants.REQUEST_ELEMENTS_INDEX) 
+        unifData = []
+        for i in range(len(names)):
+            unifData.append([names[i], tableNames[i], elements[i]])
+
         cursor.execute("SELECT * FROM part_requests")
         part_requests = cursor.fetchall()
         cursor.execute("SELECT * FROM creation_requests")
         creation_requests = cursor.fetchall()
-        return render_template("requests.html", p_requests=part_requests, c_requests=creation_requests)
+        return render_template("requests.html", p_requests=part_requests, c_requests=creation_requests, uploadCats=constants.UPLOAD_CATEGORY, data=unifData)
 
 @app.route("/upload", methods=["GET", "POST"])
 @login_required
@@ -377,6 +383,13 @@ for code in default_exceptions:
     app.errorhandler(code)(errorhandler)
 
 if __name__ == "__main__":
+    # Configure SQL tables, create them if they do not exist 
+    tables = constants.CATEGORIES
+    for i in range(len(tables)):
+        cursor.execute("SELECT * FROM information_schema.tables WHERE table_name = %s", (tables[i][constants.TABLE_NAME_INDEX],))
+        if len(cursor.fetchall()) != 1:
+            cursor.execute(tables[i][constants.QUERY_INDEX])
+            db.commit()
     #app.run(host= '0.0.0.0', port="4823")
     app.run(debug=True)
 
